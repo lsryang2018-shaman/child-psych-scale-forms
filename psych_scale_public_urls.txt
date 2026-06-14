@@ -1,3 +1,5 @@
-﻿snapiv: https://lsryang2018-shaman.github.io/child-psych-scale-forms/scale_form.html?config=snapiv_items.json
+﻿phq9: https://lsryang2018-shaman.github.io/child-psych-scale-forms/scale_form.html?config=phq9_items.json
+gad7: https://lsryang2018-shaman.github.io/child-psych-scale-forms/scale_form.html?config=gad7_items.json
+snapiv: https://lsryang2018-shaman.github.io/child-psych-scale-forms/scale_form.html?config=snapiv_items.json
 conners_parent: https://lsryang2018-shaman.github.io/child-psych-scale-forms/scale_form.html?config=conners_parent_items.json
 index: https://lsryang2018-shaman.github.io/child-psych-scale-forms/psych_scale_index.html
