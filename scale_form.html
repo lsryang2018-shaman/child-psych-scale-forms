@@ -463,6 +463,12 @@
         if (item.symptomCount !== null) parts.push(`${item.subscale.name}：达到症状计数阈值的条目数 ${item.symptomCount}`);
         return parts;
       }).flat();
+      (config.itemFlags || []).forEach(flag => {
+        const value = answers[flag.item - 1];
+        if (value !== null && value >= flag.minValue) {
+          flagLines.push(flag.text);
+        }
+      });
       byId("flags").innerHTML = flagLines.length
         ? flagLines.map(line => `<div class="flag ${line.includes("重") || line.includes("超过") ? "high" : "mid"}">${line}</div>`).join("")
         : `<div class="flag">未配置阈值，仅显示原始分与均分。请结合临床访谈、发育水平和功能损害综合判断。</div>`;
