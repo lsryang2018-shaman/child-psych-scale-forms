@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>量表在线填写与自动计分</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #627086;
+      --line: #dce4ee;
+      --blue: #2f5aa8;
+      --teal: #0f766e;
+      --rose: #b42357;
+      --amber: #9a5b13;
+      --green: #23734d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 20px 14px 44px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 7vw, 44px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    h2 { margin: 0 0 12px; }
+
+    .sub {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 22px rgba(23, 32, 51, 0.06);
+    }
+
+    .notice {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border-left: 6px solid var(--amber);
+      color: #5e4200;
+      background: #fff9e8;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      background: var(--blue);
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: #e8eef8;
+    }
+
+    .patient {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      margin: 14px 0;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: white;
+      font: inherit;
+    }
+
+    .items {
+      display: grid;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .item {
+      padding: 16px;
+    }
+
+    .item-title {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 12px;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #e8eef8;
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .option {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 6px;
+      color: var(--ink);
+      background: #fbfcfe;
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .option:has(input:checked) {
+      border-color: var(--blue);
+      color: white;
+      background: var(--blue);
+    }
+
+    .qr-panel {
+      display: none;
+      margin: 14px 0;
+      padding: 16px;
+    }
+
+    .qr-panel.show { display: block; }
+
+    .qr-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .qr-box img {
+      width: 180px;
+      height: 180px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+
+    .url {
+      word-break: break-all;
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .result {
+      display: none;
+      margin-top: 16px;
+      padding: 18px;
+      border-left: 8px solid var(--teal);
+    }
+
+    .result.show { display: block; }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.15;
+      color: var(--blue);
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .flag {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #eef8f4;
+      color: #144f36;
+      font-weight: 700;
+    }
+
+    .flag.mid {
+      background: #fff8e7;
+      color: var(--amber);
+    }
+
+    .flag.high {
+      background: #fff1f5;
+      color: var(--rose);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 680px) {
+      .wrap { padding: 14px 10px 32px; }
+      .options { grid-template-columns: 1fr; }
+      .option {
+        place-items: start;
+        text-align: left;
+        min-height: 46px;
+      }
+      .score-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .toolbar, .qr-panel, .notice, .patient, .items, #scaleForm { display: none !important; }
+      body { background: white; }
+      .wrap { width: 100%; padding: 0; }
+      .result { display: block; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1 id="title">量表在线填写与自动计分</h1>
+      <p class="sub" id="instruction">加载中...</p>
+      <div class="toolbar">
+        <button id="showQrBtn" type="button">显示扫码二维码</button>
+        <button class="secondary" id="copyUrlBtn" type="button">复制填写链接</button>
+        <button class="secondary" id="printBtn" type="button">打印结果</button>
+      </div>
+    </header>
+
+    <section class="notice card" id="authNotice">
+      请先在对应的 JSON 文件中替换为你已获授权使用的原始条目。当前网页负责收集、计分和生成结果，不替代临床诊断。
+    </section>
+
+    <section class="qr-panel card" id="qrPanel">
+      <div class="qr-box">
+        <img id="qrImg" alt="填写二维码" />
+        <div>
+          <strong>手机扫码填写</strong>
+          <p class="small">手机和这台电脑需要在同一个局域网/Wi-Fi。若扫码打不开，请确认防火墙允许 Python 服务器访问。</p>
+          <p class="url" id="currentUrl"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="patient card">
+      <label>
+        儿童编号/姓名缩写
+        <input id="patientId" autocomplete="off" placeholder="例如：A023 或 ZM" />
+      </label>
+      <label>
+        填写者
+        <input id="rater" autocomplete="off" placeholder="例如：父亲、母亲、主要照料者" />
+      </label>
+      <label>
+        备注
+        <input id="note" autocomplete="off" placeholder="例如：初评、复评、服药前、服药后 2 周" />
+      </label>
+    </section>
+
+    <form id="scaleForm">
+      <section class="items" id="items"></section>
+      <div class="toolbar">
+        <button id="submitBtn" type="submit">提交并查看结果</button>
+        <button class="secondary" id="resetBtn" type="button">清空重填</button>
+      </div>
+    </form>
+
+    <section class="result card" id="result">
+      <h2>自动计分结果</h2>
+      <div class="score-grid" id="scoreGrid"></div>
+      <div id="flags"></div>
+      <label>
+        可复制到病程/评估记录
+        <textarea id="resultText" rows="12" readonly></textarea>
+      </label>
+      <div class="toolbar">
+        <button id="copyResultBtn" type="button">复制结果</button>
+      </div>
+      <p class="small" id="scoringNote"></p>
+    </section>
+  </main>
+
+  <script>
+    const fallbackConfig = {
+      scaleName: "量表",
+      instruction: "请根据儿童近期实际表现作答。",
+      responseOptions: [
+        { "value": 0, "label": "0 无" },
+        { "value": 1, "label": "1 稍有" },
+        { "value": 2, "label": "2 相当多" },
+        { "value": 3, "label": "3 很多" }
+      ],
+      items: ["条目 1：请替换为授权条目"],
+      subscales: [{ "id": "total", "name": "总分", "items": [1] }],
+      scoringNote: "本结果仅用于筛查和临床沟通辅助。"
+    };
+
+    let config = fallbackConfig;
+
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function getConfigName() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("config") || "snapiv_items.json";
+    }
+
+    function itemText(item, index) {
+      if (typeof item === "string") return item;
+      return item.text || `条目 ${index + 1}`;
+    }
+
+    function renderItems() {
+      document.title = `${config.scaleName} 在线填写与自动计分`;
+      byId("title").textContent = `${config.scaleName} 在线填写与自动计分`;
+      byId("instruction").textContent = config.instruction || fallbackConfig.instruction;
+      byId("scoringNote").textContent = config.scoringNote || fallbackConfig.scoringNote;
+      const hasPlaceholders = config.items.some((item, index) => itemText(item, index).includes("请替换为"));
+      byId("authNotice").style.display = hasPlaceholders ? "block" : "none";
+
+      const container = byId("items");
+      container.innerHTML = "";
+      config.items.forEach((item, index) => {
+        const text = itemText(item, index);
+        const card = document.createElement("article");
+        card.className = "item card";
+        const options = config.responseOptions.map(opt => `
+          <label class="option">
+            <input type="radio" name="item${index}" value="${opt.value}" required />
+            <span>${opt.label}</span>
+          </label>
+        `).join("");
+        card.innerHTML = `
+          <div class="item-title">
+            <span class="num">${index + 1}</span>
+            <span>${text}</span>
+          </div>
+          <div class="options">${options}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function getAnswers() {
+      return config.items.map((_, index) => {
+        const checked = document.querySelector(`input[name="item${index}"]:checked`);
+        return checked ? Number(checked.value) : null;
+      });
+    }
+
+    function scoreSubscale(subscale, answers) {
+      const values = subscale.items.map(itemNumber => answers[itemNumber - 1]).filter(value => value !== null);
+      const sum = values.reduce((acc, value) => acc + value, 0);
+      const mean = values.length ? sum / values.length : 0;
+      const symptomThreshold = subscale.symptomThreshold ?? config.symptomThreshold;
+      const symptomCount = symptomThreshold === undefined ? null : values.filter(value => value >= symptomThreshold).length;
+      const band = (subscale.bands || []).find(entry => sum <= entry.max) || null;
+      const cutoffFlag = subscale.meanCutoff === undefined ? null : mean >= subscale.meanCutoff;
+      return { subscale, sum, mean, count: values.length, symptomCount, band, cutoffFlag };
+    }
+
+    function submitScale(event) {
+      event.preventDefault();
+      const answers = getAnswers();
+      const missing = answers.filter(value => value === null).length;
+      if (missing > 0) {
+        alert(`还有 ${missing} 个条目未完成。`);
+        return;
+      }
+
+      const subscales = (config.subscales || [{ id: "total", name: "总分", items: config.items.map((_, i) => i + 1) }])
+        .filter(subscale => Array.isArray(subscale.items) && subscale.items.length > 0);
+      const scored = subscales.map(subscale => scoreSubscale(subscale, answers));
+      const total = answers.reduce((acc, value) => acc + value, 0);
+      const totalMean = total / answers.length;
+      const patientId = byId("patientId").value.trim() || "未填写";
+      const rater = byId("rater").value.trim() || "未填写";
+      const note = byId("note").value.trim() || "无";
+      const time = new Date().toLocaleString("zh-CN", { hour12: false });
+      const rawLine = answers.map((value, index) => `${index + 1}:${value}`).join("，");
+
+      byId("scoreGrid").innerHTML = [
+        metricHtml("总分", `${total}`, `全量表均分 ${totalMean.toFixed(2)}`),
+        metricHtml("完成条目", `${answers.length}/${config.items.length}`, "所有条目均已作答"),
+        metricHtml("填写者", rater, "父母/照料者报告")
+      ].join("") + scored.map(item => metricHtml(item.subscale.name, item.sum, `均分 ${item.mean.toFixed(2)}，条目 ${item.count}`)).join("");
+
+      const flagLines = scored.map(item => {
+        const parts = [];
+        if (item.band) parts.push(`${item.subscale.name}：${item.band.label}${item.band.text ? "。" + item.band.text : ""}`);
+        if (item.cutoffFlag !== null && item.cutoffFlag) parts.push(`${item.subscale.name}：均分达到/超过参考截点 ${item.subscale.meanCutoff}`);
+        if (item.symptomCount !== null) parts.push(`${item.subscale.name}：达到症状计数阈值的条目数 ${item.symptomCount}`);
+        return parts;
+      }).flat();
+      byId("flags").innerHTML = flagLines.length
+        ? flagLines.map(line => `<div class="flag ${line.includes("重") || line.includes("超过") ? "high" : "mid"}">${line}</div>`).join("")
+        : `<div class="flag">未配置阈值，仅显示原始分与均分。请结合临床访谈、发育水平和功能损害综合判断。</div>`;
+
+      const subscaleText = scored.map(item => {
+        const pieces = [
+          `${item.subscale.name}：总分 ${item.sum}，均分 ${item.mean.toFixed(2)}`
+        ];
+        if (item.symptomCount !== null) pieces.push(`症状计数 ${item.symptomCount}`);
+        if (item.band) pieces.push(`分层 ${item.band.label}`);
+        if (item.cutoffFlag !== null) pieces.push(`参考截点 ${item.subscale.meanCutoff}，${item.cutoffFlag ? "达到/超过" : "未达到"}`);
+        return pieces.join("；");
+      }).join("\n");
+      const text = [
+        `${config.scaleName} 自动计分结果`,
+        `填写时间：${time}`,
+        `儿童编号/姓名缩写：${patientId}`,
+        `填写者：${rater}`,
+        `备注：${note}`,
+        `原始作答：${rawLine}`,
+        `总分：${total}`,
+        `全量表均分：${totalMean.toFixed(2)}`,
+        subscaleText,
+        `说明：${config.scoringNote || "本结果仅作筛查和临床访谈辅助，不能单独作为诊断依据。"}`
+      ].join("\n");
+
+      byId("resultText").value = text;
+      byId("result").classList.add("show");
+      byId("result").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function metricHtml(label, value, detail) {
+      return `<div class="metric"><strong>${value}</strong><span>${label}｜${detail}</span></div>`;
+    }
+
+    function resetScale() {
+      byId("scaleForm").reset();
+      byId("patientId").value = "";
+      byId("rater").value = "";
+      byId("note").value = "";
+      byId("result").classList.remove("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function copyText(text) {
+      await navigator.clipboard.writeText(text);
+      alert("已复制。");
+    }
+
+    function showQr() {
+      const url = window.location.href;
+      byId("currentUrl").textContent = url;
+      byId("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=${encodeURIComponent(url)}`;
+      byId("qrPanel").classList.toggle("show");
+    }
+
+    async function loadConfig() {
+      try {
+        const res = await fetch(getConfigName(), { cache: "no-store" });
+        if (!res.ok) throw new Error("config not found");
+        config = await res.json();
+      } catch (error) {
+        config = fallbackConfig;
+      }
+      renderItems();
+    }
+
+    byId("scaleForm").addEventListener("submit", submitScale);
+    byId("resetBtn").addEventListener("click", resetScale);
+    byId("copyResultBtn").addEventListener("click", () => copyText(byId("resultText").value));
+    byId("copyUrlBtn").addEventListener("click", () => copyText(window.location.href));
+    byId("showQrBtn").addEventListener("click", showQr);
+    byId("printBtn").addEventListener("click", () => window.print());
+
+    loadConfig();
+  </script>
+</body>
+</html>
