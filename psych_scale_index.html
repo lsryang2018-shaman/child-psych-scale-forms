@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>儿童青少年量表扫码入口</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f5f7fb;
+      color: #172033;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    main {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      padding: 28px 14px;
+    }
+    h1 { margin: 0 0 18px; font-size: clamp(28px, 7vw, 42px); }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    a {
+      display: block;
+      padding: 18px;
+      border: 1px solid #dce4ee;
+      border-radius: 8px;
+      background: white;
+      color: #172033;
+      text-decoration: none;
+      box-shadow: 0 10px 22px rgba(23, 32, 51, 0.06);
+    }
+    strong { display: block; margin-bottom: 8px; font-size: 22px; }
+    span { color: #627086; }
+    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>儿童青少年量表扫码入口</h1>
+    <section class="grid">
+      <a href="scale_form.html?config=snapiv_items.json">
+        <strong>SNAP-IV 26 项</strong>
+        <span>父母/教师评定，自动计算注意缺陷、多动/冲动、对立违抗分量表。</span>
+      </a>
+      <a href="scale_form.html?config=conners_parent_items.json">
+        <strong>Conners 父母版 PSQ 模板</strong>
+        <span>48 项授权条目录入模板，可按手册配置因子和多动指数。</span>
+      </a>
+    </section>
+  </main>
+</body>
+</html>
